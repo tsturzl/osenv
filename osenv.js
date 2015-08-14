@@ -1,8 +1,9 @@
-var isWindows = process.platform === 'win32'
-var path = require('path')
-var exec = require('child_process').exec
-var osTmpdir = require('os-tmpdir')
-var osHomedir = require('os-homedir')
+var isWindows = process.platform === 'win32',
+    path = require('path'),
+    exec = require('child_process').exec,
+    fs = require('fs'),
+    osTmpdir = require('os-tmpdir'),
+    osHomedir = require('os-homedir');
 
 // looking up envs is a bit costly.
 // Also, sometimes we want to have a fallback
@@ -36,37 +37,51 @@ memo('user', function () {
          ? process.env.USERDOMAIN + '\\' + process.env.USERNAME
          : process.env.USER
          )
-}, 'whoami')
+}, 'whoami');
 
 memo('prompt', function () {
   return isWindows ? process.env.PROMPT : process.env.PS1
-})
+});
 
 memo('hostname', function () {
   return isWindows ? process.env.COMPUTERNAME : process.env.HOSTNAME
-}, 'hostname')
+}, 'hostname');
 
 memo('tmpdir', function () {
   return osTmpdir()
-})
+});
 
 memo('home', function () {
   return osHomedir()
-})
+});
 
 memo('path', function () {
   return (process.env.PATH ||
           process.env.Path ||
           process.env.path).split(isWindows ? ';' : ':')
-})
+});
 
 memo('editor', function () {
   return process.env.EDITOR ||
          process.env.VISUAL ||
          (isWindows ? 'notepad.exe' : 'vi')
-})
+});
 
 memo('shell', function () {
   return isWindows ? process.env.ComSpec || 'cmd'
          : process.env.SHELL || 'bash'
-})
+});
+
+exports.appdir = function(appName, cb) {
+    var homeDir = osHomedir();
+    var appDir;
+
+    if(isWindows) appDir = path.join(homeDir, 'AppData', appName);
+    else appDir = path.join(homeDir, '.' + appName);
+
+
+    fs.mkdir(appDir, function (err) {
+        if(err && err.code !== 'EEXIST') return cb(err);
+        cb(null, appDir);
+    });
+};

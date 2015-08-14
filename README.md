@@ -61,3 +61,7 @@ and VISUAL environment variables, and falls back to `vi` on Unix, or
 
 The SHELL on Unix, which Windows calls the ComSpec.  Defaults to 'bash'
 or 'cmd'.
+
+## osenv.appdir(appName, cb)
+
+Creates an app data directory pertaining to the given OS, if the directory doesn't exists. Returns `(err, directoryPath)`.
